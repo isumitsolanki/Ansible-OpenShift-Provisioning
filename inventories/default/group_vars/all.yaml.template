@@ -188,7 +188,7 @@ env:
 # Section 11 - (Optional) Packages
   pkgs:
     galaxy: [ ibm.ibm_zhmc, community.general, community.crypto, ansible.posix, community.libvirt ]
-    controller: [ openssh, expect, sshuttle ]
+    controller: [ openssh-server, expect, sshuttle ]
     kvm: [ libguestfs, libvirt-client, libvirt-daemon-config-network, libvirt-daemon-kvm, cockpit-machines, libvirt-devel, virt-top, qemu-kvm, python3-lxml, cockpit, lvm2 ]
     bastion: [ haproxy, httpd, bind, bind-utils, expect, firewalld, mod_ssl, python3-policycoreutils, rsync ]
     hypershift: [ make, jq, git, virt-install ]
@@ -208,6 +208,7 @@ env:
       host_prefix: 23
       type: OVNKubernetes
     service_network: 172.30.0.0/16
+    machine_network: 172.23.0.0/16
     fips: 'false'
 
 # Section 13 - (Optional) Proxy
