@@ -1,7 +1,15 @@
 ---
+- name: Check if the file exists
+  stat:
+    path: ~/.bash_profile 
+  register: file_status
+
 - name: Create Hidden Bash Profile In Home Directory If It Doesn't Exist
-  ansible.builtin.file:
+  file:
     path: ~/.bash_profile
+    state: touch
+    mode: '0644'
+  when: not file_status.stat.exists
 
 - name: Add ansible SSH key to ssh-agent
   tags: ssh_agent, ssh
