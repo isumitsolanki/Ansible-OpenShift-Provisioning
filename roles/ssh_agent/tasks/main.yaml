@@ -1,4 +1,7 @@
 ---
+- name: Create Hidden Bash Profile In Home Directory If It Doesn't Exist
+  ansible.builtin.file:
+    path: ~/.bash_profile
 
 - name: Add ansible SSH key to ssh-agent
   tags: ssh_agent, ssh
