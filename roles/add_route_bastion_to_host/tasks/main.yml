@@ -1,0 +1,5 @@
+---
+- name: Add Route To Bastion From KVM Host.
+  command: "ip route add {{ env.bastion.networking.ip }} via {{ env.bastion.networking.gateway }}"
+  ignore_errors: yes
+  

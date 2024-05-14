@@ -8,3 +8,4 @@
   roles:
     - common
     - { role: create_bastion, when: env.bastion.create == True }
+    - { role: add_route_bastion_to_host, when: (env.network_mode | upper != "NAT")}
