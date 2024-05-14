@@ -61,7 +61,7 @@
 
 - hosts: localhost
   connection: local
-  become: false
+  become: true
   gather_facts: true
   vars_files:
     - "{{ inventory_dir }}/group_vars/all.yaml"
