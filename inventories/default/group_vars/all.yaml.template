@@ -40,6 +40,7 @@ env:
     protocol: #X
     iso_mount_dir: #X
     cfgs_dir: #X
+    iso_os_variant: 'rhel8.8'
 
 # Section 4 - Red Hat
   redhat:
@@ -208,6 +209,7 @@ env:
       host_prefix: 23
       type: OVNKubernetes
     service_network: 172.30.0.0/16
+    machine_network: 172.23.0.0/16
     fips: 'false'
 
 # Section 13 - (Optional) Proxy
