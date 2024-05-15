@@ -38,7 +38,7 @@
   shell: "dig +short {{ env.cluster.nodes.control.hostname[i] }}.{{ env.cluster.networking.metadata_name }}.{{ env.cluster.networking.base_domain }}  | tail -n1"
   register: control_lookup
   debug:
-    var: control_lookup.stdout
+    msg: "{{ control_lookup.stdout }}"
   failed_when: env.cluster.nodes.control.ip[i] != control_lookup.stdout
   with_sequence: start=0 end={{(env.cluster.nodes.control.hostname | length) - 1}} stride=1
   loop_control:
