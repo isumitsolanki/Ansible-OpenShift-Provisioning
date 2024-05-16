@@ -33,20 +33,33 @@
   debug:
     var: bootstrap_lookup.stdout
 
-- name: Register and print shell output For Check control nodes DNS resolution
-  tasks:
-    - name: Run a shell command and register the output
-      shell: "dig +short {{ env.cluster.nodes.control.hostname[i] }}.{{ env.cluster.networking.metadata_name }}.{{ env.cluster.networking.base_domain }}  | tail -n1"
-      register: control_lookup
-      # failed_when: env.cluster.nodes.control.ip[i] != control_lookup.stdout
-      with_sequence: start=0 end={{(env.cluster.nodes.control.hostname | length) - 1}} stride=1
-      loop_control:
-        extended: yes
-        index_var: i
-  
-    - name: Print the output in a loop
-      debug:
-        msg: "{{ control_lookup.stdout }}"  
+- name: Check Control-0 Nodes DNS Resolution
+  shell: "dig +short {{ env.cluster.nodes.control.hostname[0] }}.{{ env.cluster.networking.metadata_name }}.{{ env.cluster.networking.base_domain }} | tail -n1"
+  register: control_lookup_0
+  failed_when: env.cluster.nodes.control.ip[0] != control_lookup_0
+
+- name: Print Results From Control-0 Lookup
+  debug:
+    var: control_lookup_0.stdout
+
+- name: Check Control-1 Nodes DNS Resolution
+  shell: "dig +short {{ env.cluster.nodes.control.hostname[1] }}.{{ env.cluster.networking.metadata_name }}.{{ env.cluster.networking.base_domain }} | tail -n1"
+  register: control_lookup_1
+  failed_when: env.cluster.nodes.control.ip[0] != control_lookup_1
+
+- name: Print Results From Control-1 Lookup
+  debug:
+    var: control_lookup_1.stdout
+
+- name: Check Control-2 Nodes DNS Resolution
+  tags: check_dns, dns
+  shell: "dig +short {{ env.cluster.nodes.control.hostname[2] }}.{{ env.cluster.networking.metadata_name }}.{{ env.cluster.networking.base_domain }} | tail -n1"
+  register: control_lookup_2
+  failed_when: env.cluster.nodes.control.ip[2] != control_lookup_2
+
+- name: Print Results From Control-2 Lookup
+  debug:
+    var: control_lookup_2.stdout
 
 - name: Check compute nodes DNS resolution
   tags: check_dns, dns
