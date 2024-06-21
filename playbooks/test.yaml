@@ -1,10 +1,11 @@
----
 - hosts: localhost
-  gather_facts: False
+  gather_facts: true
   vars: 
     test_var: test
   tasks:
   - name: Test variables or anything here
     debug:
       msg: "{{ test_var }}"
-      
+  - name: Print OS Family.
+    debug: 
+      msg: "{{ ansible_os_family }}" 
