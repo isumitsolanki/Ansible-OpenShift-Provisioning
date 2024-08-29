@@ -34,6 +34,21 @@ networking:
 platform:
   none: {}
 pullSecret: >
+{% if ( disconnected.enabled )  %}
+  {{ disconnected.registry.mirror_pull_secret }}
+{% else %}
   {{ env.redhat.pull_secret }}
+{% endif %}
 sshKey: >
   {{ ssh_key.stdout }}
+{% if ( disconnected.enabled )  %}
+imageContentSources:
+- mirrors:
+  - {{ disconnected.registry.url }}/ocp4/openshift4
+  source: quay.io/openshift-release-dev/ocp-release
+- mirrors:
+  - {{ disconnected.registry.url }}/ocp4/openshift4
+  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+additionalTrustBundle: |
+  {{ disconnected.registry.ca_cert }}
+{% endif %}
