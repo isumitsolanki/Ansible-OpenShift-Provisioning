@@ -10,8 +10,8 @@
 ## 1 - Controller
 **Variable Name** | **Description** | **Example**
 :--- | :--- | :---
-**env.installation_type** | Can be of type kvm or lpar. Some packages will be ignored for installation in case of non lpar based installation. | kvm 
-**env.controller.sudo_pass** | The password to the machine running Ansible (localhost). This will only be used for two things. To ensure you've installed the pre-requisite packages if you're on Linux, and to add the login URL to your /etc/hosts file. | Pas$w0rd!
+**installation_type** | Can be of type kvm or lpar. Some packages will be ignored for installation in case of non lpar based installation. | kvm 
+**controller_sudo_pass** | The password to the machine running Ansible (localhost). This will only be used for two things. To ensure you've installed the pre-requisite packages if you're on Linux, and to add the login URL to your /etc/hosts file. | Pas$w0rd!
 
 ## 2 - LPAR(s)
 **Variable Name** | **Description** | **Example**
@@ -65,6 +65,7 @@
 **env.bastion.resources.vcpu** | How many virtual CPUs would you like to allocate to the bastion? Recommended 4 or more. | 4
 **env.bastion.resources.vcpu_model_option** | Configure the CPU model and CPU features exposed to the guest | --cpu host
 **env.bastion.networking.ip** | IPv4 address for the bastion. | 192.168.10.3
+**env.bastion.networking.internal_ip** | Private IPv4 address for bastion required when installing LPAR cluster with HiperSocket. Currently supports only when bastion is on LPAR or on zVM host. Incase of zVM bastion enable the HiperSocket prior to the playbook run with vmcp commands on the bastion. Alternative Option would be setting up the bridge port on OSA or RoCE. | 10.42.16.1  
 **env.bastion.networking.ipv6** | IPv6 address for the bastion if use_ipv6 variable is 'True'. | fd00::3
 **env.bastion.networking.mac** | MAC address for the bastion if use_dhcp variable is 'True'. | 52:54:00:18:1A:2B
 **env.bastion.networking.hostname** | Hostname of the bastion. Will be combined with env.bastion.networking.base_domain to create a Fully Qualified Domain Name (FQDN). | ocpz-bastion
@@ -148,37 +149,7 @@
 **env.cluster.nodes.infra.ipv6** | <b>(Optional)</b> IPv6 address of the infra nodes. iThis list can be expanded to any number of nodes, minimum 2. Use provided list formatting (if use_ipv6 variable is 'True'). | fd00::10fd00::11
 **env.cluster.nodes.infra.hostname** | <b>(Optional)</b> Hostnames for infra nodes. Must match the total number of IP addresses for infra nodes. If DNS is hosted on the bastion, this can be anything. If DNS is hosted elsewhere, this must match DNS definition. This will be combined with the metadata_name and base_domain to create a Fully Qualififed Domain Name (FQDN). | infra-01infra-02
 
-## 11 - (Optional) Packages
-**Variable Name** | **Description** | **Example**
-:--- | :--- | :---
-**env.pkgs.galaxy** | A list of Ansible Galaxy collections that will be installed during the setup playbook. The collections listed are required. Feel free to add more as needed, just make sure to follow the same list format. | community.general
-**env.pkgs.controller** | A list of packages that will be installed on the machine running Ansible during the setup playbook. Feel free to add more as needed, just make sure to follow the same list format. | openssh
-**env.pkgs.kvm** | A list of packages that will be installed on the KVM Host during the setup_kvm_host playbook. Feel free to add more as needed, just make sure to follow the same list format. | qemu-kvm
-**env.pkgs.bastion** | A list of packages that will be installed on the bastion during the setup_bastion playbook. Feel free to add more as needed, just make sure to follow the same list format. | haproxy
-
-## 12 - OpenShift Settings
-**Variable Name** | **Description** | **Example**
-:--- | :--- | :---
-**env.install_config.api_version** | Kubernetes API version for the cluster. These install_config variables will be passed to the OCP install_config file. This file is templated in the get_ocp role during the setup_bastion playbook. To make more fine-tuned adjustments to the install_config, you can find it at roles/get_ocp/templates/install-config.yaml.j2 | v1
-**env.install_config.compute.architecture** | Computing architecture for the compute nodes. Must be s390x for clusters on IBM zSystems. | s390x
-**env.install_config.compute.hyperthreading** | Enable or disable hyperthreading on compute nodes. Recommended enabled. | Enabled
-**env.install_config.control.architecture** | Computing architecture for the control nodes. Must be s390x for clusters on IBM zSystems, amd64 for Intel or AMD systems, and arm64 for ARM servers. | s390x
-**env.install_config.control.hyperthreading** | Enable or disable hyperthreading on control nodes. Recommended enabled. | Enabled
-**env.install_config.cluster_network.cidr** | IPv4 block in Internal cluster networking in Classless Inter-Domain Routing (CIDR) notation. Recommended to keep as is. | 10.128.0.0/14
-**env.install_config.cluster_network.host_prefix** | The subnet prefix length to assign to each individual node. For example, if hostPrefix is set to 23 then each node is assigned a /23 subnet out of the given cidr. A hostPrefix value of 23 provides 510 (2^(32 - 23) - 2) pod IP addresses. | 23
-**env.install_config.cluster_network.type** | The cluster network provider Container Network Interface (CNI) plug-in to install. Either OpenShiftSDN or OVNKubernetes (default). | OVNKubernetes
-**env.install_config.service_network** | The IP address block for services. The default value is 172.30.0.0/16. The OpenShift SDN and OVN-Kubernetes network providers support only a single IP address block for the service network. An array with an IP address block in CIDR format. | 172.30.0.0/16
-**env.install_config.machine_network** | The IP address block for Nodes IP Pool. The default value is 192.168.122.0/24 For NAT Network Mode. In case of MacvTap it will be depend on Inteface IP assignment. An array with an IP address block in CIDR format. | 192.168.122.0/24
-**env.install_config.fips** | True or False (boolean) for whether or not to use the United States' Federal Information Processing Standards (FIPS). Not yet certified on IBM zSystems. Enclosed in 'single quotes'. | 'false'
-
-## 13 - (Optional) Proxy
-**Variable Name** | **Description** | **Example**
-:--- | :--- | :---
-**env.proxy.http** | (Optional) A proxy URL to use for creating HTTP connections outside the cluster. Will be used in the install-config and applied to other Ansible hosts unless set otherwise in no_proxy below. Must follow this pattern: http://username:pswd>@ip:port | http://ocp-admin:Pa$sw0rd@9.72.10.1:80
-**env.proxy.https** | (Optional) A proxy URL to use for creating HTTPS connections outside the cluster. Will be used in the install-config and applied to other Ansible hosts unless set otherwise in no_proxy below. Must follow this pattern: https://username:pswd@ip:port | https://ocp-admin:Pa$sw0rd@9.72.10.1:80
-**env.proxy.no** | (Optional) A comma-separated list (no spaces) of destination domain names, IP addresses, or other network CIDRs to exclude from proxying. When using a proxy, all necessary IPs and domains for your cluster will be added automatically. See roles/get_ocp/templates/install-config.yaml.j2 for more details on the template. Preface a domain with . to match subdomains only. For example, .y.com matches x.y.com, but not y.com. Use * to bypass the proxy for all listed destinations. | example.com,192.168.10.1
-
-## 14 - (Optional) Misc
+## 11 - (Optional) Misc
 **Variable Name** | **Description** | **Example**
 :--- | :--- | :---
 **env.language** | What language would you like Red Hat Enterprise Linux to use? In UTF-8 language code. Available languages and their corresponding codes can be found [here](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/5/html-single/international_language_support_guide/index), in the "Locale" column of Table 2.1. | en_US.UTF-8
@@ -196,20 +167,21 @@
 **env.jumphost.pass** | (Optional) The password for user to login to the jumphost. | ch4ngeMe!
 **env.jumphost.path_to_keypair** | (Optional) The absolute path to the public key file on the jumphost to be copied to the bastion. | /home/admin/.ssh/id_rsa.pub
 
-## 15 - OCP and RHCOS (CoreOS)
+## 12 - OCP and RHCOS (CoreOS)
+* These parameters are responsible which version of OCP, RHCOS and os variant AOP is using. The default value is 'latest' for s390x architecture. I you want to install a different version or a different architecture you need to specify specify the following parameters in all.yaml file:
 
-**Variable Name** | **Description** | **Example**
+**Variable Name** | **Description** | **Example/Default**
 :--- | :--- | :---
-**ocp_download_url** | Link to the mirror for the OpenShift client and installer from Red Hat. | https://mirror.openshift.com/pub/openshift-v4/multi/clients/ocp/4.13.1/s390x/
+**ocp_download_url** | Link to the mirror for the OpenShift client and installer from Red Hat. | https://mirror.openshift.com/pub/openshift-v4/s390x/dependencies/rhcos/latest/
 **ocp_client_tgz** | OpenShift client filename (tar.gz). | openshift-client-linux.tar.gz
 **ocp_install_tgz** | OpenShift installer filename (tar.gz). | openshift-install-linux.tar.gz
-**rhcos_download_url** | Link to the CoreOS files to be used for the bootstrap, control and compute nodes. Feel free to change to a different version. | https://mirror.openshift.com/pub/openshift-v4/s390x/dependencies/rhcos/4.12/4.12.3/
-**rhcos_os_variant** | CoreOS base OS. Use the OS string as defined in 'osinfo-query os -f short-id' | rhel8.6
-**rhcos_live_kernel** | CoreOS kernel filename to be used for the bootstrap, control and compute nodes. | rhcos-4.12.3-s390x-live-kernel-s390x
-**rhcos_live_initrd** | CoreOS initramfs to be used for the bootstrap, control and compute nodes. | rhcos-4.12.3-s390x-live-initramfs.s390x.img
-**rhcos_live_rootfs** | CoreOS rootfs to be used for the bootstrap, control and compute nodes. | rhcos-4.12.3-s390x-live-rootfs.s390x.img
+**rhcos_download_url** | Link to the CoreOS files to be used for the bootstrap, control and compute nodes. Feel free to change to a different version. | https://mirror.openshift.com/pub/openshift-v4/multi/clients/ocp/latest/s390x/
+**rhcos_os_variant** | CoreOS base OS. Use the OS string as defined in 'osinfo-query os -f short-id' | rhl9
+**rhcos_live_kernel** | CoreOS kernel filename to be used for the bootstrap, control and compute nodes. | rhcos-live-kernel-s390x
+**rhcos_live_initrd** | CoreOS initramfs to be used for the bootstrap, control and compute nodes. | rhcos-live-initramfs.s390x.img
+**rhcos_live_rootfs** | CoreOS rootfs to be used for the bootstrap, control and compute nodes. | rhcos-live-rootfs.s390x.img
 
-## 16 - (Optional) Create compute node in a day-2 operation
+## 13 - (Optional) Create compute node in a day-2 operation
 
 **Variable Name** | **Description** | **Example**
 :--- | :--- | :---
@@ -223,8 +195,7 @@
 **day2_compute_node.host_user** | KVM host user which is used to create the VM | root
 **day2_compute_node.host_arch** | KVM host architecture.  | s390x
 
-## 17 - (Optional) Agent Based Installer
-
+## 14 - (Optional) Agent Based Installer
 **Variable Name** | **Description** | **Example**
 :--- | :--- | :---
 **abi.flag** | This is the flag, Will be used to identify during execution. Few checks in the playbook will be depend on this (default value will be False)  | True
@@ -232,6 +203,47 @@
 **abi.ocp_installer_version** | Version will contain value of openshift-installer binary version user desired to be used | '4.15.0-rc.8'
 **abi.ocp_installer_url** | This is the base url of openshift installer binary it will remain same as static value, User Do not need to give value until user wants to change the mirror | 'https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/'
 
+## OpenShift Settings
+* The parameters bellow have a hierachical structure and need to be added to all.yaml in given format. For example if you want to change the hyperthreading (disable) than you need to specify the following value in all.yaml file:
+  install_config:
+    compute:
+      hyperthreading: Disabled
+
+**Variable Name** | **Description** | **Example/Default**
+:--- | :--- | :---
+**install_config.api_version** | Kubernetes API version for the cluster. These install_config variables will be passed to the OCP install_config file. This file is templated in the get_ocp role during the setup_bastion playbook. To make more fine-tuned adjustments to the install_config, you can find it at roles/get_ocp/templates/install-config.yaml.j2 | v1
+**install_config.compute.architecture** | Computing architecture for the compute nodes. Must be s390x for clusters on IBM zSystems. | s390x
+**install_config.compute.hyperthreading** | Enable or disable hyperthreading on compute nodes. Recommended enabled. | Enabled
+**install_config.control.architecture** | Computing architecture for the control nodes. Must be s390x for clusters on IBM zSystems, amd64 for Intel or AMD systems, and arm64 for ARM servers. | s390x
+**install_config.control.hyperthreading** | Enable or disable hyperthreading on control nodes. Recommended enabled. | Enabled
+**install_config.cluster_network.cidr** | IPv4 block in Internal cluster networking in Classless Inter-Domain Routing (CIDR) notation. Recommended to keep as is. | 10.128.0.0/14
+**install_config.cluster_network.host_prefix** | The subnet prefix length to assign to each individual node. For example, if hostPrefix is set to 23 then each node is assigned a /23 subnet out of the given cidr. A hostPrefix value of 23 provides 510 (2^(32 - 23) - 2) pod IP addresses. | 23
+**install_config.cluster_network.type** | The cluster network provider Container Network Interface (CNI) plug-in to install. Either OpenShiftSDN or OVNKubernetes (default). | OVNKubernetes
+**install_config.service_network** | The IP address block for services. The default value is 172.30.0.0/16. The OpenShift SDN and OVN-Kubernetes network providers support only a single IP address block for the service network. An array with an IP address block in CIDR format. | 172.30.0.0/16
+**install_config.machine_network** | The IP address block for Nodes IP Pool. The default value is 192.168.122.0/24 For NAT Network Mode. In case of MacvTap it will be depend on Inteface IP assignment. An array with an IP address block in CIDR format. | 192.168.122.0/24
+**install_config.fips** | True or False (boolean) for whether or not to use the United States' Federal Information Processing Standards (FIPS). Not yet certified on IBM zSystems. Enclosed in 'single quotes'. | 'false'
+
+## Packages (Optional)
+* Packages are installed based on the executed playbooks based on the given requirements. This means that these variables have default values which can be overwritten in all.yaml file.
+* The following table describe the current installed packages and their default values.
+* In general is to say that the default values are all required. Feel free to add more if needed but it is required to specify the whole list (include default values).
+* Within the all.yaml.template file you find an example of the parameter including the format. 
+
+**Variable Name** | **Description** | **Default values**
+:--- | :--- | :---
+**pkgs_galaxy** | A list of Ansible Galaxy collections that will be installed during the setup playbook. The collections listed are required. | [ ibm.ibm_zhmc, community.general, community.crypto, ansible.posix, community.libvirt ]
+**pkgs_controller** | A list of packages that will be installed on the machine running Ansible during the setup playbook. | [ openssh, expect, sshuttle ]
+**pkgs_kvm** | A list of packages that will be installed on the KVM Host during the setup_kvm_host playbook. | [ libguestfs, libvirt-client, libvirt-daemon-config-network, libvirt-daemon-kvm, cockpit-machines, libvirt-devel, virt-top, qemu-kvm, python3-lxml, cockpit, lvm2 ]
+**pkgs_bastion** | A list of packages that will be installed on the bastion during the setup_bastion playbook. Feel free to add more as needed, just make sure to follow the same list format. | [ haproxy, httpd, bind, bind-utils, expect, firewalld, mod_ssl, python3-policycoreutils, rsync ]
+**pkgs_zvm** | A list of packages that will be installed in case of HCP (zVM nodes) or LPAR installation. | [ git, python3-pip, python3-devel, openssl-devel, rust, cargo, libffi-devel, wget, tar, jq, gcc, make, x3270, python39 ]
+
+## Proxy (Optional)
+**Variable Name** | **Description** | **Example**
+:--- | :--- | :---
+**use_proxy** | (Optional) Use proxyx . Default value is 'False'. Possible values are 'True' or 'False'. | False
+**proxy_http** | (Optional) A proxy URL to use for creating HTTP connections outside the cluster. Will be used in the install-config and applied to other Ansible hosts unless set otherwise in no_proxy below. Must follow this pattern: http://username:pswd>@ip:port | http://ocp-admin:Pa$sw0rd@9.72.10.1:80
+**proxy_https** | (Optional) A proxy URL to use for creating HTTPS connections outside the cluster. Will be used in the install-config and applied to other Ansible hosts unless set otherwise in no_proxy below. Must follow this pattern: https://username:pswd@ip:port | https://ocp-admin:Pa$sw0rd@9.72.10.1:80
+**proxy_no** | (Optional) A comma-separated list (no spaces) of destination domain names, IP addresses, or other network CIDRs to exclude from proxying. When using a proxy, all necessary IPs and domains for your cluster will be added automatically. See roles/get_ocp/templates/install-config.yaml.j2 for more details on the template. Preface a domain with . to match subdomains only. For example, .y.com matches x.y.com, but not y.com. Use * to bypass the proxy for all listed destinations. | example.com,192.168.10.1
 
 ## Disconnected cluster setup (Optional)
 **Variable Name** | **Description** | **Example**
@@ -306,7 +318,6 @@
 **hcp.bastion_params.file_server.ip** | IPv4 address for the file server that will be used to pass config files and iso to KVM host LPAR(s) and bastion VM during their first boot. | 192.168.10.201
 **hcp.bastion_params.file_server.protocol** | Protocol used to serve the files, either 'ftp' or 'http' | http
 **hcp.bastion_params.file_server.iso_mount_dir** | Directory path relative to the HTTP/FTP accessible directory where RHEL ISO is mounted. For example, if the FTP root is at /home/user1 and the ISO is mounted at /home/user1/RHEL/8.7 then this variable would be RHEL/8.7 - no slash before or after. | RHEL/8.7
-**hcp.bastion_params.os_variant** | rhel os variant for creating bastion | 8.7
 **hcp.bastion_params.disk** | rhel os variant for creating bastion | 8.7
 **hcp.bastion_params.network_name** | rhel os variant for creating bastion | 8.7
 **hcp.bastion_params.networking_device** | The network interface card from Linux's perspective.  Usually enc and then a number that comes from the dev_num of the network adapter. | enc1100
@@ -317,10 +328,11 @@
 **hcp.data_plane.vcpus** | vCPUs for compute nodes | 4
 **hcp.data_plane.memory** | RAM for compute nodes | 16384
 **hcp.data_plane.nameserver** | Nameserver for compute nodes | 192.168.10.1
-**hcp.data_plane.storage.type** | Storage type for KVM guests  qcow/dasd | qcow
-**hcp.data_plane.storage.qcow.disk_size** | Disk size for kvm guests | 100G
-**hcp.data_plane.storage.qcow.pool_path** | Storage pool path for creating disks | /home/images/
-**hcp.data_plane.storage.dasd** | dasd disks for kvm guests | /disk
+**hcp.data_plane.kvm.boot_method** | Boot method for booting agents. Supported methods: pxe, iso | pxe
+**hcp.data_plane.kvm.storage.type** | Storage type for KVM guests  qcow/dasd | qcow
+**hcp.data_plane.kvm.storage.qcow.disk_size** | Disk size for kvm guests | 100G
+**hcp.data_plane.kvm.storage.qcow.pool_path** | Storage pool path for creating disks | /home/images/
+**hcp.data_plane.kvm.storage.dasd** | dasd disks for kvm guests | /disk
 **hcp.data_plane.kvm.ip_params.static_ip.enabled** | true or false - use static IPs for agents using NMState | true
 **hcp.data_plane.kvm.ip_params.static_ip.ip** | List of IP addresses for agents | 192.168.10.1
 **hcp.data_plane.kvm.ip_params.static_ip.interface** | Interface for agents for configuring NMStateConfig | eth0
@@ -341,3 +353,25 @@
 **hcp.data_plane.zvm.interface.ip** | IP addresses for to be used for zVM nodes | 192.168.10.1
 **hcp.data_plane.zvm.nodes.dasd.disk_id** | Disk id for dasd disk to be used for zVM node | 4404 
 **hcp.data_plane.zvm.nodes.lun** | Disk details of fcp disk to be used for zVM node | 4404
+
+## ZVM ( Optional )
+**Variable Name** | **Description** | **Example**
+:--- | :--- | :---
+**zvm.network_mode** | Network mode for zvm nodes  Supported modes: vswitch,osa, RoCE  |  vswitch
+**zvm.disk_type** | Disk type for zvm nodes  Supported disk types: fcp, dasd | dasd
+**zvm.subnetmask** | Subnet mask for compute nodes | 255.255.255.0
+**zvm.gateway** | Gateway for compute nodes | 192.168.10.1
+**zvm.vcpus** | vCPUs for compute nodes | 4
+**zvm.memory** | RAM for compute nodes | 16384
+**zvm.nodes** | Set of parameters for zvm nodes  Give the details of each zvm node here |
+**zvm.nodes.name** | Name of the zVM guest | m1317002
+**zvm.nodes.host** | Host name of the zVM guests  which we use to login 3270 console | boem1317
+**zvm.nodes.user** | Username for zVM guests to login | m1317002
+**zvm.nodes.password** | password for the zVM guests to login | password
+**zvm.nodes.interface.ifname** | Network interface name for zVM guests | encbdf0
+**zvm.nodes.interface.nettype** | Network type for zVM guests for network connectivity | qeth
+**zvm.nodes.interface.subchannels** | subchannels for zVM guests interfaces | 0.0.bdf0,0.0.bdf1,0.0.bdf2
+**zvm.nodes.interface.options** | Configurations options  | layer2=1
+**zvm.interface.ip** | IP addresses for to be used for zVM nodes | 192.168.10.1
+**zvm.nodes.dasd.disk_id** | Disk id for dasd disk to be used for zVM node | 4404
+**zvm.nodes.lun** | Disk details of fcp disk to be used for zVM node | 840a

@@ -4,15 +4,15 @@
 # https://ibm.github.io/Ansible-OpenShift-Provisioning/set-variables-group-vars/
 
 # Section 1 - Ansible Controller
+installation_type: kvm
+controller_sudo_pass: #X
+
 env:
-  installation_type: #X
-  controller:
-    sudo_pass: #X
 
 # Section 2 - LPAR(s)
   z:
     high_availability: False
-    ip_forward: "{{ 1 if network_mode | upper == 'NAT' else 0 }}"
+    ip_forward: 0
     lpar1:
       create: True
       hostname: #X
@@ -63,6 +63,7 @@ env:
       vcpu_model_option: "--cpu host"
     networking:
       ip: #X
+      internal_ip: #X Required only when creating LPAR cluster with HiperSocket.
       ipv6: #X
       mac: #X
       hostname: #X
@@ -187,38 +188,7 @@ env:
 # All variables below this point do not need to be changed for a default installation #
 #######################################################################################
 
-# Section 11 - (Optional) Packages
-  pkgs:
-    galaxy: [ ibm.ibm_zhmc, community.general, community.crypto, ansible.posix, community.libvirt ]
-    controller: [ openssh, expect, sshuttle ]
-    kvm: [ libguestfs, libvirt-client, libvirt-daemon-config-network, libvirt-daemon-kvm, cockpit-machines, libvirt-devel, virt-top, qemu-kvm, python3-lxml, cockpit, lvm2 ]
-    bastion: [ haproxy, httpd, bind, bind-utils, expect, firewalld, mod_ssl, python3-policycoreutils, rsync ]
-    zvm: [ git, python3-pip, python3-devel, openssl-devel, rust, cargo, libffi-devel, wget, tar, jq, gcc, make, x3270, python39 ]
-
-# Section 12 - OpenShift Settings
-  install_config:
-    api_version: v1
-    compute:
-      architecture: s390x
-      hyperthreading: Enabled
-    control:
-      architecture: s390x
-      hyperthreading: Enabled
-    cluster_network:
-      cidr: 10.128.0.0/14
-      host_prefix: 23
-      type: OVNKubernetes
-    service_network: 172.30.0.0/16
-    machine_network: 192.168.122.0/24
-    fips: 'false'
-
-# Section 13 - (Optional) Proxy
-#  proxy:
-#    http:
-#    https:
-#    no:
-
-# Section 14 - (Optional) Misc
+# Section 11 - (Optional) Misc
   language: en_US.UTF-8
   timezone: America/New_York
   keyboard: us
@@ -239,28 +209,10 @@ env:
     pass:
     path_to_keypair:
 
-# Section 15 - OCP and RHCOS (CoreOS)
+# Section 12 - OCP and RHCOS (CoreOS)
+# ocp download_url and rhcos download url
 
-# ocp_download_url with '/' at the end !
-ocp_download_url: "https://mirror.openshift.com/pub/openshift-v4/multi/clients/ocp/4.13.1/s390x/"
-# ocp client and installer filenames
-ocp_client_tgz: "openshift-client-linux.tar.gz"
-ocp_install_tgz: "openshift-install-linux.tar.gz"
-
-# rhcos_download_url with '/' at the end !
-rhcos_download_url: "https://mirror.openshift.com/pub/openshift-v4/s390x/dependencies/rhcos/4.12/4.12.3/"
-
-# For rhcos_os_variant use the OS string as defined in 'osinfo-query os -f short-id'
-rhcos_os_variant: rhel8.6
-
-# RHCOS live image filenames
-rhcos_live_kernel: "rhcos-4.12.3-s390x-live-kernel-s390x"
-rhcos_live_initrd: "rhcos-4.12.3-s390x-live-initramfs.s390x.img"
-rhcos_live_rootfs: "rhcos-4.12.3-s390x-live-rootfs.s390x.img"
-
-
-# Section 16 - (Optional) Create additional compute node in a day-2 operation
-
+# Section 13 - (Optional) Create additional compute node in a day-2 operation
 day2_compute_node:
   vm_name:
   vm_hostname:
@@ -273,10 +225,24 @@ day2_compute_node:
   host_arch:
 
 
-# Section 17 - Agent Based Installer ( Optional )
+# Section 14 - Agent Based Installer ( Optional )
 abi:
   flag: False
   ansible_workdir: 'ansible_workdir'
   ocp_installer_version: '4.15.0-rc.8'
   ocp_installer_url: 'https://mirror.openshift.com/pub/openshift-v4/s390x/clients/ocp/'
   boot_method: <pxe|iso>
+
+# Openshift Settings  
+# Settings like architecture, hyperthreading, network cidr, etc.
+# This is a hierachical structure having install_config as top level.
+# Check the documentation for parameters and default/example values.
+
+# (Optional) Packages
+# Format to overwrite the packages to be installed is: 
+# pkgs_controller: [ openssh, expect, sshuttle ]
+# Overwrite exists for pkgs_galaxy, pkgs_controller, pkgs_kvm, pkgs_bastion, pkgs_zvm
+
+# (Optional) Proxy
+# Pls check the documentation which vars are present (include examples). If use_proxy is set to true,
+# than proxy_http, proxy_https and proxy_no must be set.
