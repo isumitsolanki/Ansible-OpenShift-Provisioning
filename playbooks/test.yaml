@@ -8,3 +8,23 @@
     debug:
       msg: "{{ test_var }}"
       
+- name: Convert Hex to Decimal
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Convert hexadecimal to decimal
+      vars:
+        hex_value: "100"
+      debug:
+        msg: "{{ hex_value | int(base=16) }}"
+
+- name: Getting OS Version and OS Family
+  hosts: localhost
+  tasks:
+    - name: Getting OS Version
+      shell: cat /etc/*release |grep 'VERSION_ID' | cut -d "=" -f 2
+      register: os_version
+
+    - name: Print rhel version and ansible_os_family
+      debug:
+        msg: "rhel_version: {{ os_version.stdout }} || ansible_os_family: {{ ansible_os_family }}"
