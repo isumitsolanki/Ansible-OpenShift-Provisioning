@@ -49,6 +49,7 @@
     {% if (install_config_vars.selinux is defined and install_config_vars.selinux==0) %}
     --extra-args "selinux=0" \
     {% endif %}
+    --extra-args "psi=1" \
     --memballoon none \
     --graphics none \
     --wait=-1 \
@@ -119,6 +120,7 @@
     {% if (install_config_vars.selinux is defined and install_config_vars.selinux==0) %}
     --extra-args "selinux=0" \
     {% endif %}
+    --extra-args "psi=1" \
     --memballoon none \
     --graphics none \
     --wait=-1 \
