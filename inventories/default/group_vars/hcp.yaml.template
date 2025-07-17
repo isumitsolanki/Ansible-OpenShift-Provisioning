@@ -73,8 +73,8 @@ hcp:
 
   data_plane:
     compute_count:
-    vcpus: 4
-    memory: 16384
+    vcpus: 16
+    memory: 32768
 
     kvm:
       boot_method: pxe   # Supported methods : pxe, iso
