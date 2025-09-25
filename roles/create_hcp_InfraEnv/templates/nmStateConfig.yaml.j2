@@ -11,6 +11,8 @@ spec:
       - name: "{{ hcp.data_plane.kvm.ip_params.static_ip.interface }}"
         type: ethernet
         state: up
+        ipv6:
+          enabled: false
         mac-address: "{{ agent_mac_addr[item] }}"
         ipv4:
           enabled: true
